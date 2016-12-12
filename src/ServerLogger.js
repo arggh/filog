@@ -9,6 +9,8 @@ import * as util from "util";
  *
  * Its main method is log(level, message, context).
  *
+ * @extends Logger
+ *
  * @see ServerLogger.log
  */
 class ServerLogger extends Logger {
@@ -20,12 +22,14 @@ class ServerLogger extends Logger {
    *   A logging strategy instance.
    * @param {Webapp} webapp
    *   The Meteor WebApp service.
+   * @param {Processor[]} processors
+   *   An array of processor instances.
    * @param {Object} parameters
    * - logRequestHeaders: add request headers to the log context. Defaults to true.
    * - servePath: the path on which to expose the logger endpoint. Defaults to "/logger".
    */
-  constructor(strategy, webapp = null, parameters = {}) {
-    super(strategy);
+  constructor(strategy, webapp = null, processors = [], parameters = {}) {
+    super(strategy, processors);
     const defaultParameters = {
       logRequestHeaders: true,
       servePath: "/logger"

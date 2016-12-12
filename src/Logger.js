@@ -17,12 +17,13 @@ const Logger = class {
    *
    * @param {StrategyBase} strategy
    *   The sender selection strategy to apply.
+   * @param {ProcessorBase[]} processors
+   *   An array of processor instances.
    */
-  constructor(strategy) {
-    this.processors = [];
+  constructor(strategy, processors = []) {
+    this.processors = processors;
     this.strategy = strategy;
     this.tk = TraceKit;
-
     this.strategy.customizeLogger(this);
   }
 
@@ -145,7 +146,9 @@ const Logger = class {
    * @param {Object} rawContext
    *   (Optional). An object complementing the message.
    * @param {Boolean} cooked
-   *   (Optional). Is the context already reduced ?
+   *   (Optional). Is the context already reduced ? This is typically the case
+   *   on the server logger when it comes from the client logger: it should not
+   *   usually be set by the user.
    *
    * @returns {void}
    *
@@ -161,15 +164,16 @@ const Logger = class {
     }
 
     const context = cooked
-      ? this.processors.reduce(this.processorReducer, { ...rawContext })
+      ? this.processors.reduce(this.processorReducer, rawContext)
       : rawContext;
 
     // A timestamp is required, so insert it forcefully.
     context.timestamp = { log: Date.now() };
 
     const senders = this.strategy.selectSenders(level, message, context);
+    console.log("senders", senders);
     senders.forEach(sender => {
-      sender.send(level, message, context);
+      sender.send(level, message, context, this.formatOptions);
     });
   }
 
