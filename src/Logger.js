@@ -37,6 +37,12 @@ const Logger = class {
    * @see Logger#arm
    */
   reportSubscriber(e) {
+    if (typeof this.maxErrorsLimit !== 'undefined') {
+      this.errorCount++;
+      if (this.errorCount > this.maxErrorsLimit) {
+        return this.disarm(0);
+      }
+    }
     this.log(LogLevel.ERROR, e.message, e);
   }
 
@@ -47,7 +53,15 @@ const Logger = class {
    *
    * @see Logger#reportSubscriber
    */
-  arm() {
+  arm(maxErrorsLimit) {
+    if (maxErrorsLimit !== undefined) {
+      this.maxErrorsLimit = maxErrorsLimit;
+      this.errorCount = 0;
+    } else {
+      delete this.maxErrorsLimit;
+      delete this.errorCount;
+    }
+
     this.tk.report.subscribe(this.tkReporter);
   }
 
